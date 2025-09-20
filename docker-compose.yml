@@ -1,0 +1,36 @@
+services:
+  # MLflow UI 서비스
+  mlflow-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/app/mlruns
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=file:///app/mlruns
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/app/mlruns
+    restart: unless-stopped
+    networks:
+      - wine-mlflow-network
+
+  # 학습 서비스
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile.training
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./wine_quality_merged.csv:/app/wine_quality_merged.csv
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=file:///app/mlruns
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/app/mlruns
+    networks:
+      - wine-mlflow-network
+
+networks:
+  wine-mlflow-network:
+    driver: bridge
+
+
